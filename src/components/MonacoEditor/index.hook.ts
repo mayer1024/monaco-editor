@@ -42,6 +42,25 @@ export const useMonacoEditor = (language = 'javascript') => {
     return monacoEditor
   }
 
+  const addSuggestion = (suggestions: string[]) => {
+  const lang = 'ATP'
+    monaco.languages.registerCompletionItemProvider(lang, {
+      provideCompletionItems: () => {
+        const newSuggestion = suggestions.map(item => {
+        return  {
+            label: item,
+            kind: monaco.languages.CompletionItemKind.Snippet,
+            insertText: item,
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          }
+        })
+      return { suggestions: newSuggestion }
+      }
+    } )
+  }
+
+
+
   // 卸载
   onBeforeUnmount(() => {
     if (monacoEditor) monacoEditor.dispose()
@@ -52,7 +71,8 @@ export const useMonacoEditor = (language = 'javascript') => {
     updateVal,
     getEditor: () => monacoEditor,
     createEditor,
-    onFormatDoc
+    onFormatDoc,
+    addSuggestion
   }
 }
 
@@ -73,36 +93,56 @@ function addCustomLang() {
     ]
   })
 
+  // monaco.languages.setMonarchTokensProvider(lang, {
+  //   tokenizer: {
+  //      keyword = []
+  //     root: [
+  //       [/\b0[xX][0-9a-fA-F]+\b/, 'number.hex'],
+  //       [/\b\d+\b/, 'number'],
+
+  //       [/\b(if|else|return)\b/, 'my-keyword'],
+
+  //       [/\b(and|or|not)\b/, 'my-built-in-function'],
+
+  //       [/([a-zA-Z0-9_]+)\s*(\(.*\))/, '@rematch', '@matchfunc'],
+
+  //       [/'([^'\\]|\\.)*$/, 'string.invalid'],
+  //       [/'/, { token: 'string.quote', bracket: '@open', next: '@string' }],
+  //       { include: '@whitespace' }
+  //     ],
+  //     matchfunc: [[/([a-zA-Z0-9_]+)/, { token: 'my-function', next: '@popall' }]],
+  //     string: [
+  //       [/[^\\'']+/, 'string'],
+  //       [/\\./, 'string.escape.invalid'],
+  //       [/'/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
+  //     ],
+  //     comment: [[/#.*$/, 'comment']],
+  //     whitespace: [
+  //       [/[ \t\r\n]+/, 'white'],
+  //       [/#.*$/, 'comment']
+  //     ]
+  //   },
+  //   //语言大小写不敏感吗
+  //   ignoreCase: true
+  // })
+
+
   monaco.languages.setMonarchTokensProvider(lang, {
+    keywords: ['OBJ', 'TS', 'VIEW', 'ENTITY', 'PARAM', 'ATTR', 'PERIOD', 'ENUM'],
     tokenizer: {
       root: [
-        [/\b0[xX][0-9a-fA-F]+\b/, 'number.hex'],
-        [/\b\d+\b/, 'number'],
-
-        [/\b(if|else|return)\b/, 'my-keyword'],
-
-        [/\b(and|or|not)\b/, 'my-built-in-function'],
-
-        [/([a-zA-Z0-9_]+)\s*(\(.*\))/, '@rematch', '@matchfunc'],
-
-        [/'([^'\\]|\\.)*$/, 'string.invalid'],
-        [/'/, { token: 'string.quote', bracket: '@open', next: '@string' }],
-        { include: '@whitespace' }
+        [
+          /[A-Z][\w$]*/,
+          {
+            cases: {
+              '@keywords': 'keyword',
+              '@default': 'my-func',
+            },
+          },
+        ],
+        [/[a-z_$][\w$]*/, { token: 'identifier' }],
       ],
-      matchfunc: [[/([a-zA-Z0-9_]+)/, { token: 'my-function', next: '@popall' }]],
-      string: [
-        [/[^\\'']+/, 'string'],
-        [/\\./, 'string.escape.invalid'],
-        [/'/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
-      ],
-      comment: [[/#.*$/, 'comment']],
-      whitespace: [
-        [/[ \t\r\n]+/, 'white'],
-        [/#.*$/, 'comment']
-      ]
     },
-    //语言大小写不敏感吗
-    ignoreCase: true
   })
 
   monaco.languages.setLanguageConfiguration(lang, {
@@ -170,28 +210,28 @@ function addCustomLang() {
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           detail: 'sort_attribute-用于定义筛选条件，返回基于属性和值之间关系的WHERE语句'
         },
-        {
-          label: 'TS_CALC',
-          kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: ['TS_CALC '].join('\n'),
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          detail: 'expression-必填，时序四则运算表达式'
-        },
-        {
-          label: 'TS_SHIFT',
-          kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: ['TS_SHIFT '].join('\n'),
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          detail:
-            'ts_id-必填，时序对象 \n shift_periods_number-必填，整数，表示要移动的期间数，正数则向未来方向移动，负数则向过去方向移动，期间类型为时序ts_id的期间类型'
-        },
-        {
-          label: 'GET_OBJ_DATA',
-          kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: ['GET_OBJ_DATA '].join('\n'),
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          detail: 'object-对象 \n attributeList-属性集合 \n selector-筛选条件'
-        }
+        // {
+        //   label: 'TS_CALC',
+        //   kind: monaco.languages.CompletionItemKind.Snippet,
+        //   insertText: ['TS_CALC '].join('\n'),
+        //   insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        //   detail: 'expression-必填，时序四则运算表达式'
+        // },
+        // {
+        //   label: 'TS_SHIFT',
+        //   kind: monaco.languages.CompletionItemKind.Snippet,
+        //   insertText: ['TS_SHIFT '].join('\n'),
+        //   insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        //   detail:
+        //     'ts_id-必填，时序对象 \n shift_periods_number-必填，整数，表示要移动的期间数，正数则向未来方向移动，负数则向过去方向移动，期间类型为时序ts_id的期间类型'
+        // },
+        // {
+        //   label: 'GET_OBJ_DATA',
+        //   kind: monaco.languages.CompletionItemKind.Snippet,
+        //   insertText: ['GET_OBJ_DATA '].join('\n'),
+        //   insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        //   detail: 'object-对象 \n attributeList-属性集合 \n selector-筛选条件'
+        // }
       ]
       return { suggestions: suggestions }
     }
